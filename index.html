@@ -53,13 +53,11 @@ header {
 #note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto; container-type: size }
 #note .in { padding: 2cqi 3.5cqi }
 #note h1 {
-  margin: 0; font-size: 16.5cqi; font-weight: 500; line-height: 1.02; letter-spacing: -.05em; color: #000;
-  word-break: keep-all;
+  margin: 0 0 .9em; font-size: 9.5cqi; font-weight: 600; line-height: 1.15; letter-spacing: -.02em; color: #000;
 }
 #note p {
-  margin: .5em 0 0;
-  font-size: clamp(11px, 6.2cqi, 24px); line-height: 1.3; letter-spacing: -.025em; color: #000;
-  word-break: keep-all;
+  margin: 0;
+  font-size: clamp(11px, 5.4cqi, 22px); line-height: 1.55; letter-spacing: -.01em; color: #000;
 }
 </style>
 </head>
@@ -82,8 +80,9 @@ const WORKS = [
 const BIG_DESK = { w: 5, h: 4 }, BIG_PHONE = { w: 4, h: 3 };
 const PHONE_MAX = 700;        // 이 폭보다 좁으면 폰
 const WORK_RATIO = 5 / 4;     // 작업 칸 가로:세로
-const NOTE_H = 5;             // 글 상자 높이 (줄)
+const NOTE_H = 5;             // 글 상자 최소 높이 (줄) — 글이 길면 늘어남
 const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸)
+const NOTE_RATIO_PHONE = 0.6; // 폰은 글이 읽히게 넓게
 const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
 const EDGE = 1;               // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
 const ROUNDS = 300, TRIES = 60;
@@ -96,17 +95,21 @@ const el = (tag, cls, style) => Object.assign(document.createElement(tag), { cla
 // 사각형 a, b가 gap 칸 이내로 붙거나 겹치는지
 const near = (a, b, gap) => a.c < b.c + b.w + gap && b.c < a.c + a.w + gap && a.r < b.r + b.h + gap && b.r < a.r + a.h + gap;
 
-// 작업 4개를 화면 끝·글 상자·서로에게서 한 칸씩 띄워 무작위 배치
+// 작업 4개를 화면 끝·글 상자·서로에게서 한 칸씩 띄워 무작위 배치.
+// 자리가 모자라면(폰) 작업끼리는 붙여도 되게 다시 시도
 function placeWorks(cols, rows, note, big) {
   const maxC = cols - big.w - EDGE, maxR = rows - big.h - EDGE;
   let best = [];
-  for (let round = 0; round < ROUNDS && best.length < WORKS.length; round++) {
-    const taken = [];
-    for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
-      const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: big.w, h: big.h };
-      if (!near(p, note, 1) && !taken.some(q => near(p, q, 1))) taken.push(p);
+  for (const gap of [1, 0]) {
+    for (let round = 0; round < ROUNDS && best.length < WORKS.length; round++) {
+      const taken = [];
+      for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
+        const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: big.w, h: big.h };
+        if (!near(p, note, 1) && !taken.some(q => near(p, q, gap))) taken.push(p);
+      }
+      if (taken.length > best.length) best = taken;
     }
-    if (taken.length > best.length) best = taken;
+    if (best.length === WORKS.length) break;
   }
   return best;
 }
@@ -117,7 +120,7 @@ function layout() {
   const cellRatio = (big.w / big.h) / WORK_RATIO;   // 사진 칸 세로/가로
   // 칸 세로/가로를 cellRatio에 맞춰 줄 수를 정하고, 사진이 다 안 들어가면 열을 늘림
   const fixed = WORKS.length * big.w * big.h;
-  const noteWidth = cols => Math.max(4, Math.round(cols * NOTE_RATIO));
+  const noteWidth = cols => W < PHONE_MAX ? Math.round(cols * NOTE_RATIO_PHONE) : Math.max(4, Math.round(cols * NOTE_RATIO));
   let cols = Math.max(big.w + 2 * EDGE, Math.round(W / Math.sqrt(W * H / (N + fixed + 4 * NOTE_H) / cellRatio)));
   let rows;
   for (;;) {
@@ -129,7 +132,13 @@ function layout() {
   const cw = W / cols, ch = H / rows;
   const lift = Math.min(cw, ch) * LIFT;
 
-  const note = { c: cols - noteW, r: 1, w: noteW, h: NOTE_H };
+  // 글 상자: 글이 다 들어가도록 높이를 줄 단위로 늘림 (최소 NOTE_H줄)
+  const noteEl = el('div', '', `width:${noteW * cw}px`);
+  noteEl.id = 'note';
+  noteEl.innerHTML = noteHTML;
+  floor.replaceChildren(noteEl);
+  const noteRows = Math.max(NOTE_H, Math.ceil(noteEl.firstElementChild.offsetHeight / ch));
+  const note = { c: cols - noteW, r: 1, w: noteW, h: noteRows };
   const spots = placeWorks(cols, rows, note, big);
   const used = new Set();
   for (const p of spots) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
@@ -157,9 +166,7 @@ function layout() {
     frag.appendChild(box);
   });
 
-  const noteEl = el('div', '', `left:${note.c * cw}px;top:${note.r * ch}px;width:${note.w * cw}px;height:${note.h * ch}px`);
-  noteEl.id = 'note';
-  noteEl.innerHTML = noteHTML;
+  Object.assign(noteEl.style, { left: `${note.c * cw}px`, top: `${note.r * ch}px`, height: `${note.h * ch}px` });
   frag.appendChild(noteEl);
 
   floor.replaceChildren(frag);
@@ -168,8 +175,9 @@ function layout() {
 // 글 상자 내용 — 여기에 글 넣기
 const noteHTML = `
   <div class="in">
-    <h1>시각디자인<br>워크숍</h1>
-    <p>30일 프로젝트. 팀원 다섯 명이 15일은 거침을, 15일은 부드러움을 매체에 상관없이 모았습니다.</p>
+    <h1>30일 프로젝트 1</h1>
+    <p>안녕하세요. 저희는 계원예술대학교 시각디자인 워크숍 수업에서 ‘30일 프로젝트’를 진행했습니다. 30일 동안 팀원 5명이 거침과 부드러움을 주제로, 매체에 상관없이 자료를 수집했습니다.</p>
+    <p>그리고 수집한 자료를 보여주는 방식에 대해 고민하고, 시도해 보았습니다.</p>
   </div>`;
 
 layout();
