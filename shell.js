@@ -89,7 +89,7 @@
 
   // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
   //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
-  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 13, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
+  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 12, BODY_MAX_PHONE = 13, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
   const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
@@ -110,7 +110,9 @@
     // 2) 이 종이 글을 그 크기로 넣어 줄 수 정하기 (최소 NOTE_H)
     function fit(rowH, fixedRows) {
       const langs = ['ko', 'en'];
-      const BODY_MIN = innerWidth < G.PHONE_MAX ? BODY_MIN_PHONE : BODY_MIN_DESK;
+      const phone = innerWidth < G.PHONE_MAX;
+      const BODY_MIN = phone ? BODY_MIN_PHONE : BODY_MIN_DESK;
+      const BMAX = phone ? BODY_MAX_PHONE : BODY_MAX;   // 폰은 글씨 작게 고정 → 종이도 짧게
       el.style.overflow = 'hidden';   // 재는 동안 스크롤바가 폭을 먹지 않게 (윈도우는 스크롤바가 두꺼움)
       for (const l of langs) {
         let t = TITLE_MAX;
@@ -121,7 +123,7 @@
       const refRows = Math.max(G.NOTE_H, Math.ceil((refNeed + BOTTOM_ROOM * rowH) / rowH));
       const maxH = refRows * rowH - BOTTOM_ROOM * rowH;
       for (const l of langs) {
-        let b = BODY_MAX;
+        let b = BMAX;
         while (b > BODY_MIN) { setSize(sizes[l].t, b); if (measure(l, ref).offsetHeight <= maxH) break; b--; }
         sizes[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
       }
