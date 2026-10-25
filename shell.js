@@ -52,7 +52,7 @@
     N: 142, WORKS: 4,
     BIG_DESK: { w: 5, h: 4 }, BIG_PHONE: { w: 4, h: 3 },
     PHONE_MAX: 700, WORK_RATIO: 5 / 4,
-    NOTE_H: 5, NOTE_H_PHONE: 3, NOTE_RATIO: 0.22, NOTE_RATIO_PHONE: 0.6,
+    NOTE_H: 5, NOTE_H_PHONE: 3, NOTE_RATIO: 0.22, NOTE_W_PHONE: 5,
     EDGE: 1,
   };
   function grid(W, H) {
@@ -67,8 +67,8 @@
       if (cols * rows >= G.N + fixed) break;
       cols++;
     }
-    // 글 종이: 컴퓨터는 화면 폭 22% - 1칸, 오른쪽 끝에서 한 칸 띄움 / 폰은 60%, 끝에 붙임
-    const noteW = phone ? Math.round(cols * G.NOTE_RATIO_PHONE) : Math.max(4, Math.round(cols * G.NOTE_RATIO)) - 1;
+    // 글 종이: 컴퓨터는 화면 폭 22% - 1칸, 오른쪽 끝에서 한 칸 띄움 / 폰은 5칸, 끝에 붙임
+    const noteW = phone ? G.NOTE_W_PHONE : Math.max(4, Math.round(cols * G.NOTE_RATIO)) - 1;
     return { phone, big, cols, rows, cw: W / cols, ch: H / rows, noteW, noteC: cols - noteW - (phone ? 0 : 1), noteR: 1 };
   }
 
