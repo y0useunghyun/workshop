@@ -77,15 +77,13 @@ function showItem(n) {
   if (r.type === 'youtube') media = `<iframe src="https://www.youtube-nocookie.com/embed/${r.yt}" title="${esc(r.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
   else if (r.type === 'video') media = `<video src="${r.full}" controls autoplay muted loop playsinline></video>`;
   else if (r.full) media = `<img src="${r.full}" alt="${esc(r.title)}">`;
-  const meta = `${no(r.n)} · ${t.type[r.type]}${r.g == null ? '' : ' · ' + t.group[r.g]}`;
-  const link = r.type === 'link' || r.type === 'youtube' ? `<a class="open" href="${esc(r.href)}" target="_blank" rel="noopener">${t.open} ${ARROW}</a>` : '';
+  const link = r.type === 'link' ? `<a class="open" href="${esc(r.href)}" target="_blank" rel="noopener">${t.open} ${ARROW}</a>` : '';
 
   view.innerHTML = `
     <div class="v-in">
       <button type="button" class="x" aria-label="${t.close}">✕</button>
       ${media ? `<div class="media ${r.type}">${media}</div>` : ''}
-      <p class="meta">${meta}</p>
-      <h4>${esc(r.title || t.untitled)}</h4>
+      ${media ? '' : `<h4>${esc(r.title || t.untitled)}</h4>`}
       ${r.text ? `<p class="txt">${esc(r.text)}</p>` : ''}
       ${link}
     </div>`;
