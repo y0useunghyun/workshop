@@ -6,8 +6,6 @@
 #back .bk { padding: 12px 14px 60px }
 #back h2 { margin: 28px 0 8px; font-size: clamp(28px, 4vw, 56px); font-weight: 500; letter-spacing: -.03em; line-height: 1 }
 #back h2:first-child { margin-top: 8px }
-#back h3 { margin: 22px 0 6px; font-size: clamp(20px, 2.4vw, 32px); font-weight: 500; letter-spacing: -.02em }
-#back h3 small { font-size: .5em; vertical-align: top; margin-left: .2em }
 #back h2 small { font-size: .45em; vertical-align: top; margin-left: .2em }
 
 #back a { color: inherit; text-decoration: none }
@@ -28,20 +26,51 @@
   width: 36px; height: 36px; object-fit: cover; vertical-align: middle; margin-right: 10px;
   display: inline-block; background: #eee;
 }
-#back .ti a, #back .ti span, #back summary { display: flex; align-items: center; cursor: pointer }
-#back .ti span { cursor: default }
-#back summary { list-style: none }
-#back summary::-webkit-details-marker { display: none }
-#back details p { margin: 8px 0 4px 46px; white-space: pre-line; max-width: 46em; color: #333 }
+#back .ti button {
+  display: flex; align-items: center; width: 100%; padding: 0; border: 0; background: none;
+  color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+#back tr.on { background: #000; color: #fff }
+#back tr.on .nothumb { background: #333 }
+
+/* 모은 자료: 누르면 두 칸으로 갈라지며 오른쪽에 크게 */
+#back .arch { display: grid; grid-template-columns: minmax(0, 1fr) 0fr; transition: grid-template-columns .35s ease }
+#back .arch.open { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) }
+#view { min-width: 0; overflow: clip }   /* hidden이면 sticky가 안 붙음 */
+#view .v-in {
+  position: sticky; top: 0; height: calc(100vh - var(--head)); box-sizing: border-box;
+  margin-left: 16px; padding: 12px 0 16px 16px; border-left: 1px solid #000;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+#view .x {
+  align-self: flex-end; background: #000; color: #fff; border: 0; cursor: pointer;
+  font: inherit; font-size: 14px; line-height: 1; padding: .45em .6em; margin-bottom: 10px;
+}
+@media (hover: hover) { #view .x:hover { background: #fff; color: #000; outline: 1px solid #000; outline-offset: -1px } }
+#view .media { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; background: #f4f4f4 }
+#view .media img, #view .media video { max-width: 100%; max-height: 100%; object-fit: contain; display: block }
+#view .media.youtube { flex: 0 0 auto; aspect-ratio: 16 / 9 }
+#view .media iframe { width: 100%; height: 100%; border: 0 }
+#view .meta { margin: 12px 0 2px; font-size: 13px; color: #555 }
+#view h4 { margin: 0; font-size: clamp(18px, 1.8vw, 26px); font-weight: 500; letter-spacing: -.02em; line-height: 1.3 }
+#view .txt { margin: 10px 0 0; white-space: pre-line; font-size: 15px; line-height: 1.6; max-width: 40em }
+#view .open { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 15px; border-bottom: 1px solid #000; align-self: flex-start }
+#view .open .go { width: .8em; height: .8em; fill: none; stroke: currentColor; stroke-width: 1.4 }
 
 @media (hover: hover) {
   #back tbody tr:hover, #back ol a:hover { background: #000; color: #fff }
-  #back tbody tr:hover details p { color: #fff }
   #back tbody tr:hover .nothumb { background: #333 }
 }
 @media (max-width: 699px) {
   #back .ty { display: none }
   #back table { font-size: 14px }
+  /* 폰: 보기 칸은 아래에서 올라오는 반 화면 */
+  #back .arch, #back .arch.open { grid-template-columns: minmax(0, 1fr) }
+  #back .arch.open { padding-bottom: 56vh }
+  #view { position: fixed; left: 0; right: 0; bottom: 0; height: 56vh; z-index: 3; background: #fff;
+    border-top: 1px solid #000; transform: translateY(100%); transition: transform .3s ease }
+  #back .arch.open #view { transform: none }
+  #view .v-in { height: 100%; margin: 0; padding: 10px 14px 14px; border-left: 0 }
 }
 
 /* 헤더 오른쪽 뒤집기 버튼 */
