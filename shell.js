@@ -52,7 +52,7 @@
     N: 142, WORKS: 4,
     BIG_DESK: { w: 5, h: 4 }, BIG_PHONE: { w: 4, h: 3 },
     PHONE_MAX: 700, WORK_RATIO: 5 / 4,
-    NOTE_H: 5, NOTE_H_PHONE: 4, NOTE_RATIO: 0.22, NOTE_RATIO_PHONE: 0.6,
+    NOTE_H: 5, NOTE_H_PHONE: 3, NOTE_RATIO: 0.22, NOTE_RATIO_PHONE: 0.6,
     EDGE: 1,
   };
   function grid(W, H) {
@@ -89,7 +89,7 @@
 
   // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
   //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
-  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 11, BODY_MAX_PHONE = 12, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48, TITLE_MAX_PHONE = 20;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
+  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 10, BODY_MAX_PHONE = 11, BODY_MAX = 30, TITLE_MIN = 14, TITLE_MAX = 48, TITLE_MAX_PHONE = 20;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
   const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
