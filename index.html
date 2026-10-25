@@ -227,6 +227,7 @@ const noteInner = lang => `<div class="in" lang="${lang}"><h1>${NOTE[lang].title
 // 그 상자 안에서 언어마다 따로 — 제목은 한 줄에 드는 가장 큰 크기, 본문은 상자를 채우는 가장 큰 크기
 const BODY_MIN = 16, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;
 const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
+const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 const NOTE_FIT = {};
 let noteFit = null;   // 마지막 배치의 글 상자
 // Adobe 글꼴은 쓰는 한글 글자를 나중에 받아와 글자 폭이 바뀜 → 글이 넘치거나 제목이 두 줄이 되면
@@ -257,7 +258,7 @@ function fitNote(noteEl, rowH, fixedRows) {
   for (const l of langs) {
     let b = BODY_MAX;
     while (b > BODY_MIN) { set(NOTE_FIT[l].t, b); if (measure(l).offsetHeight <= maxH) break; b--; }
-    NOTE_FIT[l].b = b;
+    NOTE_FIT[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
   }
   return rows;
 }
