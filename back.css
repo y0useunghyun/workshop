@@ -35,8 +35,9 @@
 #back details p { margin: 8px 0 4px 46px; white-space: pre-line; max-width: 46em; color: #333 }
 
 @media (hover: hover) {
-  #back tbody tr:hover, #back ol a:hover { background: var(--hover); color: #fff }
+  #back tbody tr:hover, #back ol a:hover { background: #000; color: #fff }
   #back tbody tr:hover details p { color: #fff }
+  #back tbody tr:hover .nothumb { background: #333 }
 }
 @media (max-width: 699px) {
   #back .ty { display: none }
