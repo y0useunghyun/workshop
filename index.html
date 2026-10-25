@@ -67,6 +67,14 @@ header {
 /* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄. 밑에 깔린 사진이 아주 조금 비침 */
 #note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto; container-type: size }
 #note .in { padding: 2cqi 3.5cqi }
+#note h1 { padding-right: 14cqi }   /* 번역 버튼 자리 */
+#lang {
+  position: absolute; top: 2.5cqi; right: 2.5cqi;
+  background: #000; color: #fff; border: 0; border-radius: 0; cursor: pointer;
+  font: inherit; font-size: clamp(10px, 3.6cqi, 14px); line-height: 1; padding: .45em .6em;
+}
+@media (hover: hover) { #lang:hover { background: #fff; color: #000; outline: 1px solid #000; outline-offset: -1px } }
+#lang:focus-visible { outline: 2px solid #3d63f0; outline-offset: 2px }
 #note h1 {
   margin: 0 0 .9em; font-size: 9.5cqi; font-weight: 500; line-height: 1.15; letter-spacing: -.02em; color: #000;
 }
@@ -150,9 +158,11 @@ function layout() {
   // 글 상자: 글이 다 들어가도록 높이를 줄 단위로 늘림 (최소 NOTE_H줄)
   const noteEl = el('div', '', `width:${noteW * cw}px`);
   noteEl.id = 'note';
-  noteEl.innerHTML = noteHTML;
   floor.replaceChildren(noteEl);
-  const noteRows = Math.max(NOTE_H, Math.ceil(noteEl.firstElementChild.offsetHeight / ch));
+  // 두 언어 중 긴 쪽에 맞춰 높이를 정해서, 바꿔도 넘치지 않게
+  const textH = Object.keys(NOTE).map(lang => { noteEl.innerHTML = noteInner(lang); return noteEl.firstElementChild.offsetHeight; });
+  const noteRows = Math.max(NOTE_H, Math.ceil(Math.max(...textH) / ch));
+  fillNote(noteEl);
   const note = { c: cols - noteW, r: 1, w: noteW, h: noteRows };
   const spots = placeWorks(cols, rows, note, big);
   const used = new Set();
@@ -187,12 +197,31 @@ function layout() {
   floor.replaceChildren(frag);
 }
 
-// 글 상자 내용 — 여기에 글 넣기
-const noteHTML = `
-  <div class="in">
-    <h1>30일 프로젝트 1</h1>
-    <p>안녕하세요. 저희는 계원예술대학교 시각디자인 워크숍 수업에서 ‘30일 프로젝트’를 진행했습니다. 30일 동안 팀원 5명이 거침과 부드러움을 주제로, 매체에 상관없이 자료를 수집했습니다. 그리고 수집한 자료를 보여주는 방식에 대해 고민하고, 시도해 보았습니다.</p>
-  </div>`;
+// 글 상자 내용 — 여기에 글 넣기 (한국어 / 영어)
+const NOTE = {
+  ko: {
+    title: '30일 프로젝트 1',
+    body: '안녕하세요. 저희는 계원예술대학교 시각디자인 워크숍 수업에서 ‘30일 프로젝트’를 진행했습니다. 30일 동안 팀원 5명이 거침과 부드러움을 주제로, 매체에 상관없이 자료를 수집했습니다. 그리고 수집한 자료를 보여주는 방식에 대해 고민하고, 시도해 보았습니다.',
+    button: 'EN', label: '영어로 보기',
+  },
+  en: {
+    title: '30-Day Project 1',
+    body: 'Hello. In the Visual Design Workshop class at Kaywon University of Art & Design, we carried out the ‘30-Day Project.’ For 30 days, our five team members collected materials on the themes of roughness and softness, regardless of medium. We then explored and experimented with ways of presenting what we collected.',
+    button: 'KO', label: '한국어로 보기',
+  },
+};
+let noteLang = 'ko';
+const noteInner = lang => `<div class="in" lang="${lang}"><h1>${NOTE[lang].title}</h1><p>${NOTE[lang].body}</p></div>`;
+
+function fillNote(noteEl) {
+  const t = NOTE[noteLang];
+  noteEl.innerHTML = noteInner(noteLang) + `<button id="lang" type="button" aria-label="${t.label}">${t.button}</button>`;
+  noteEl.querySelector('#lang').addEventListener('click', () => {
+    noteLang = noteLang === 'ko' ? 'en' : 'ko';
+    fillNote(noteEl);
+    noteEl.querySelector('#lang').focus();
+  });
+}
 
 layout();
 let timer;
