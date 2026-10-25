@@ -16,7 +16,7 @@ const BACK_TEXT = {
     untitled: 'Untitled', open: 'Open original', close: 'Close',
   },
 };
-const FLIP_MS = 350;
+const SLIDE_MS = 450;
 const ARROW = '<svg class="go" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13 13 3M5 3h8v8"/></svg>';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -92,13 +92,15 @@ function showItem(n) {
 
 addEventListener('keydown', e => { if (e.key === 'Escape' && openN != null) showItem(null); });
 
-// 앞면 ↔ 뒷면 뒤집기: 반 바퀴 돌아 사라지고, 반대편이 반 바퀴 돌아 나옴
+// 홈 ↔ 인덱스: 인덱스가 아래에서 올라와 홈을 덮고, 닫으면 다시 내려감
 function flipTo(from, to, animate) {
+  const opening = to.id === 'back';
+  const sheet = opening ? to : from;
+  const home = opening ? from : to;
   if (!animate) { from.hidden = true; to.hidden = false; return Promise.resolve(); }
-  const turn = deg => ({ transform: `perspective(1600px) rotateY(${deg}deg)` });
-  return from.animate([turn(0), turn(90)], { duration: FLIP_MS, easing: 'ease-in' }).finished.then(() => {
-    from.hidden = true;
-    to.hidden = false;
-    return to.animate([turn(-90), turn(0)], { duration: FLIP_MS, easing: 'ease-out' }).finished;
-  });
+  sheet.hidden = false;
+  home.hidden = false;
+  const frames = [{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }];
+  return sheet.animate(opening ? frames : frames.reverse(), { duration: SLIDE_MS, easing: opening ? 'cubic-bezier(.2, .8, .2, 1)' : 'cubic-bezier(.6, 0, .8, .2)' }).finished
+    .then(() => { (opening ? home : sheet).hidden = true; });
 }

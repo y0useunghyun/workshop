@@ -242,9 +242,11 @@ const flipBtn = document.getElementById('flip');
 const onBack = () => location.hash === '#index';
 let staleLayout = false;   // 뒷면일 때 창 크기가 바뀌면 앞면 돌아올 때 다시 배치
 function setFlipLabel() { flipBtn.textContent = onBack() ? NOTE[noteLang].toFront : NOTE[noteLang].toBack; }
+let indexOpen = false;
 function showSide(animate) {
   const toBack = onBack();
-  if (toBack === stage.hidden) return;
+  if (toBack === indexOpen) return;
+  indexOpen = toBack;
   setFlipLabel();
   flipTo(toBack ? stage : back, toBack ? back : stage, animate).then(() => {
     if (!toBack && staleLayout) { staleLayout = false; layout(); }
