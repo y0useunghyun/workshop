@@ -28,7 +28,8 @@
   margin: 0 0 .9em; padding-right: 14cqi;   /* EN 버튼 자리 */
   font-size: var(--tsize, 9.5cqi); font-weight: 500; line-height: 1.15; letter-spacing: -.02em;
 }
-.ws-paper p { margin: 0; font-size: var(--bsize, 16px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em }
+.ws-paper p { margin: 0; font-size: var(--bsize, 16px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em; text-wrap: pretty }
+.ws-paper .ws-nb { white-space: nowrap }
 .ws-paper .ws-lang {
   position: absolute; top: 2.5cqi; right: 2.5cqi;
   background: #000; color: #fff; border: 0; border-radius: 0; cursor: pointer;

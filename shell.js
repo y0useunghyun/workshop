@@ -100,7 +100,9 @@
     const sizes = {};
     let last = null;   // 마지막 fit 조건 { rowH, rows }
 
-    const inner = (l, c = content) => `<div class="ws-in" lang="${l}"><h1>${c[l].title}</h1><p>${c[l].body}</p></div>`;
+    // 마지막 단어는 한 덩어리로 → 마지막 줄에 「다.」처럼 한두 글자만 남지 않게
+    const keepLast = t => t.replace(/(\S+)$/, '<span class="ws-nb">$1</span>');
+    const inner = (l, c = content) => `<div class="ws-in" lang="${l}"><h1>${c[l].title}</h1><p>${keepLast(c[l].body)}</p></div>`;
     const setSize = (t, b) => { el.style.setProperty('--tsize', `${t}px`); el.style.setProperty('--bsize', `${b}px`); };
     const measure = (l, c) => { el.innerHTML = inner(l, c); return el.firstElementChild; };
     const ref = TEXT.paper.home;   // 크기 기준 글
