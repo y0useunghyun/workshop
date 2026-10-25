@@ -110,7 +110,7 @@ const BIG_DESK = { w: 5, h: 4 }, BIG_PHONE = { w: 4, h: 3 };
 const PHONE_MAX = 700;        // 이 폭보다 좁으면 폰
 const WORK_RATIO = 5 / 4;     // 작업 칸 가로:세로
 const NOTE_H = 5;             // 글 상자 최소 높이 (줄) — 글이 길면 늘어남
-const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸)
+const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸) - 1칸, 컴퓨터는 오른쪽 끝에서 한 칸 띄움
 const NOTE_RATIO_PHONE = 0.6; // 폰은 글이 읽히게 넓게
 const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
 const EDGE = 1;               // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
@@ -149,7 +149,7 @@ function layout() {
   const cellRatio = (big.w / big.h) / WORK_RATIO;   // 사진 칸 세로/가로
   // 칸 세로/가로를 cellRatio에 맞춰 줄 수를 정하고, 사진이 다 안 들어가면 열을 늘림
   const fixed = WORKS.length * big.w * big.h;
-  const noteWidth = cols => W < PHONE_MAX ? Math.round(cols * NOTE_RATIO_PHONE) : Math.max(4, Math.round(cols * NOTE_RATIO));
+  const noteWidth = cols => W < PHONE_MAX ? Math.round(cols * NOTE_RATIO_PHONE) : Math.max(4, Math.round(cols * NOTE_RATIO)) - 1;
   let cols = Math.max(big.w + 2 * EDGE, Math.round(W / Math.sqrt(W * H / (N + fixed + 4 * NOTE_H) / cellRatio)));
   let rows;
   for (;;) {
@@ -169,7 +169,7 @@ function layout() {
   const textH = Object.keys(NOTE).map(lang => { noteEl.innerHTML = noteInner(lang); return noteEl.firstElementChild.offsetHeight; });
   const noteRows = Math.max(NOTE_H, Math.ceil(Math.max(...textH) / ch));
   fillNote(noteEl);
-  const note = { c: cols - noteW, r: 1, w: noteW, h: noteRows };
+  const note = { c: cols - noteW - (W < PHONE_MAX ? 0 : 1), r: 1, w: noteW, h: noteRows };
   const spots = placeWorks(cols, rows, note, big);
   const used = new Set();
   for (const p of spots) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
