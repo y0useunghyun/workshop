@@ -52,7 +52,7 @@
     N: 142, WORKS: 4,
     BIG_DESK: { w: 5, h: 4 }, BIG_PHONE: { w: 4, h: 3 },
     PHONE_MAX: 700, WORK_RATIO: 5 / 4,
-    NOTE_H: 5, NOTE_RATIO: 0.22, NOTE_RATIO_PHONE: 0.6,
+    NOTE_H: 5, NOTE_H_PHONE: 4, NOTE_RATIO: 0.22, NOTE_RATIO_PHONE: 0.6,
     EDGE: 1,
   };
   function grid(W, H) {
@@ -89,7 +89,7 @@
 
   // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
   //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
-  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 12, BODY_MAX_PHONE = 13, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
+  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 11, BODY_MAX_PHONE = 12, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48, TITLE_MAX_PHONE = 20;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
   const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
@@ -113,14 +113,16 @@
       const phone = innerWidth < G.PHONE_MAX;
       const BODY_MIN = phone ? BODY_MIN_PHONE : BODY_MIN_DESK;
       const BMAX = phone ? BODY_MAX_PHONE : BODY_MAX;   // 폰은 글씨 작게 고정 → 종이도 짧게
+      const TMAX = phone ? TITLE_MAX_PHONE : TITLE_MAX;
+      const MIN_ROWS = phone ? G.NOTE_H_PHONE : G.NOTE_H;
       el.style.overflow = 'hidden';   // 재는 동안 스크롤바가 폭을 먹지 않게 (윈도우는 스크롤바가 두꺼움)
       for (const l of langs) {
-        let t = TITLE_MAX;
+        let t = TMAX;
         while (t > TITLE_MIN && !oneLine(l, t)) t--;
         sizes[l] = { t, b: BODY_MIN };
       }
       const refNeed = Math.max(...langs.map(l => { setSize(sizes[l].t, BODY_MIN); return measure(l, ref).offsetHeight; }));
-      const refRows = Math.max(G.NOTE_H, Math.ceil((refNeed + BOTTOM_ROOM * rowH) / rowH));
+      const refRows = Math.max(MIN_ROWS, Math.ceil((refNeed + BOTTOM_ROOM * rowH) / rowH));
       const maxH = refRows * rowH - BOTTOM_ROOM * rowH;
       for (const l of langs) {
         let b = BMAX;
@@ -128,7 +130,7 @@
         sizes[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
       }
       const own = Math.max(...langs.map(l => { setSize(sizes[l].t, sizes[l].b); return measure(l).offsetHeight; }));
-      const rows = fixedRows || Math.max(G.NOTE_H, Math.ceil((own + BOTTOM_ROOM * rowH) / rowH));
+      const rows = fixedRows || Math.max(MIN_ROWS, Math.ceil((own + BOTTOM_ROOM * rowH) / rowH));
       el.style.overflow = '';
       last = { rowH, rows };
       render();
