@@ -40,21 +40,17 @@ header {
 @media (hover: hover) { .box:hover .face span { opacity: 1 } }
 .box:focus-visible .face span { opacity: 1 }
 
-/* 벽 = 가장자리 한 줄을 늘린 색 + 바닥 쪽으로 어둡게 */
+/* 벽 = 흰색 */
+.wt, .wb, .wl, .wr { background: #fff }
 .wt, .wb { left: 0; right: 0 }
 .wl, .wr { top: 0; bottom: 0 }
-.wt { top: 0; transform-origin: top; transform: rotateX(90deg);
-  background-image: linear-gradient(to top, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
-  background-size: 100% 100%, 100% 6000%; background-position: 0 0, top }
-.wb { bottom: 0; transform-origin: bottom; transform: rotateX(-90deg);
-  background-image: linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
-  background-size: 100% 100%, 100% 6000%; background-position: 0 0, bottom }
-.wl { left: 0; transform-origin: left; transform: rotateY(-90deg);
-  background-image: linear-gradient(to left, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
-  background-size: 100% 100%, 6000% 100%; background-position: 0 0, left }
-.wr { right: 0; transform-origin: right; transform: rotateY(90deg);
-  background-image: linear-gradient(to right, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
-  background-size: 100% 100%, 6000% 100%; background-position: 0 0, right }
+.wt { top: 0; transform-origin: top; transform: rotateX(90deg) }
+.wb { bottom: 0; transform-origin: bottom; transform: rotateX(-90deg) }
+.wl { left: 0; transform-origin: left; transform: rotateY(-90deg) }
+.wr { right: 0; transform-origin: right; transform: rotateY(90deg) }
+
+/* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄 */
+#note { position: absolute; background: #fff; overflow: auto }
 </style>
 </head>
 <body>
@@ -72,38 +68,51 @@ const WORKS = [
   { img: 'w/weave.jpg', name: '해체 직조', sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/' },
   { img: 'w/cube.jpg',  name: '큐브',  sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/cube.html' },
 ];
-const BIG_W = 4, BIG_H = 3;   // 작업 칸 크기 (사진 칸 기준)
+const BIG_W = 5, BIG_H = 4;   // 작업 칸 크기 (사진 칸 기준)
+const NOTE_H = 5;             // 글 상자 높이 (줄)
+const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸)
 const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
-const TRIES = 400;
+const EDGE = 1;               // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
+const ROUNDS = 300, TRIES = 60;
 
 const stage = document.getElementById('stage');
 const floor = document.getElementById('floor');
 
 const pad = n => String(n).padStart(3, '0');
 const el = (tag, cls, style) => Object.assign(document.createElement(tag), { className: cls, style });
+// 사각형 a, b가 gap 칸 이내로 붙거나 겹치는지
+const near = (a, b, gap) => a.c < b.c + b.w + gap && b.c < a.c + a.w + gap && a.r < b.r + b.h + gap && b.r < a.r + a.h + gap;
 
-// 작업 4개를 서로 붙지 않게 무작위 배치
-function placeWorks(cols, rows) {
-  const taken = [];
-  const hit = (a, b) => a.c < b.c + BIG_W + 1 && b.c < a.c + BIG_W + 1 && a.r < b.r + BIG_H + 1 && b.r < a.r + BIG_H + 1;
-  for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
-    const p = { c: Math.floor(Math.random() * (cols - BIG_W + 1)), r: Math.floor(Math.random() * (rows - BIG_H + 1)) };
-    if (!taken.some(q => hit(p, q))) taken.push(p);
+// 작업 4개를 화면 끝·글 상자·서로에게서 한 칸씩 띄워 무작위 배치
+function placeWorks(cols, rows, note) {
+  const maxC = cols - BIG_W - EDGE, maxR = rows - BIG_H - EDGE;
+  let best = [];
+  for (let round = 0; round < ROUNDS && best.length < WORKS.length; round++) {
+    const taken = [];
+    for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
+      const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: BIG_W, h: BIG_H };
+      if (!near(p, note, 1) && !taken.some(q => near(p, q, 1))) taken.push(p);
+    }
+    if (taken.length > best.length) best = taken;
   }
-  return taken;
+  return best;
 }
 
 function layout() {
   const W = stage.clientWidth, H = stage.clientHeight;
-  const total = N + WORKS.length * BIG_W * BIG_H;
-  const cols = Math.max(BIG_W, Math.round(W / Math.sqrt(W * H / total)));
-  const rows = Math.max(BIG_H, Math.ceil(total / cols));
+  const guess = N + WORKS.length * BIG_W * BIG_H + 4 * NOTE_H;
+  const cols = Math.max(BIG_W + 2 * EDGE, Math.round(W / Math.sqrt(W * H / guess)));
+  const noteW = Math.max(4, Math.round(cols * NOTE_RATIO));
+  // 사진 142장이 다 들어가도록 글 상자 폭까지 넣고 줄 수 계산
+  const total = N + WORKS.length * BIG_W * BIG_H + noteW * NOTE_H;
+  const rows = Math.max(BIG_H + 2 * EDGE, NOTE_H + 1, Math.ceil(total / cols));
   const cw = W / cols, ch = H / rows;
   const lift = Math.min(cw, ch) * LIFT;
 
-  const spots = placeWorks(cols, rows);
+  const note = { c: cols - noteW, r: 1, w: noteW, h: NOTE_H };
+  const spots = placeWorks(cols, rows, note);
   const used = new Set();
-  spots.forEach(p => { for (let r = p.r; r < p.r + BIG_H; r++) for (let c = p.c; c < p.c + BIG_W; c++) used.add(r * cols + c); });
+  for (const p of [note, ...spots]) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
 
   const frag = document.createDocumentFragment();
   let i = 0;
@@ -128,21 +137,20 @@ function layout() {
     frag.appendChild(box);
   });
 
+  const noteEl = el('div', '', `left:${note.c * cw}px;top:${note.r * ch}px;width:${note.w * cw}px;height:${note.h * ch}px`);
+  noteEl.id = 'note';
+  noteEl.innerHTML = noteHTML;
+  frag.appendChild(noteEl);
+
   floor.replaceChildren(frag);
 }
+
+// 글 상자 내용 — 여기에 글 넣기
+const noteHTML = '';
 
 layout();
 let timer;
 addEventListener('resize', () => { clearTimeout(timer); timer = setTimeout(layout, 150); });
-
-// 마우스 따라 보는 위치가 살짝 움직임 (컴퓨터에서만)
-if (matchMedia('(pointer: fine)').matches) {
-  addEventListener('pointermove', e => {
-    const x = 50 + (e.clientX / innerWidth - .5) * 30;
-    const y = 50 + (e.clientY / innerHeight - .5) * 30;
-    stage.style.perspectiveOrigin = `${x}% ${y}%`;
-  });
-}
 </script>
 </body>
 </html>
