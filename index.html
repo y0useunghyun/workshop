@@ -68,9 +68,12 @@ const WORKS = [
   { img: 'w/weave.jpg', name: '해체 직조', sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/' },
   { img: 'w/cube.jpg',  name: '큐브',  sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/cube.html' },
 ];
-const BIG_W = 5, BIG_H = 4;   // 작업 칸 크기 (사진 칸 기준)
+// 작업 칸 크기 (사진 칸 기준) — 폰은 칸 수를 줄이고, 칸을 세로로 살짝 길게 해서 5:4 비율 유지
+const BIG_DESK = { w: 5, h: 4 }, BIG_PHONE = { w: 4, h: 3 };
+const PHONE_MAX = 700;        // 이 폭보다 좁으면 폰
+const WORK_RATIO = 5 / 4;     // 작업 칸 가로:세로
 const NOTE_H = 5;             // 글 상자 높이 (줄)
-const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸)
+const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸) + 왼쪽으로 한 칸 더
 const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
 const EDGE = 1;               // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
 const ROUNDS = 300, TRIES = 60;
@@ -84,13 +87,13 @@ const el = (tag, cls, style) => Object.assign(document.createElement(tag), { cla
 const near = (a, b, gap) => a.c < b.c + b.w + gap && b.c < a.c + a.w + gap && a.r < b.r + b.h + gap && b.r < a.r + a.h + gap;
 
 // 작업 4개를 화면 끝·글 상자·서로에게서 한 칸씩 띄워 무작위 배치
-function placeWorks(cols, rows, note) {
-  const maxC = cols - BIG_W - EDGE, maxR = rows - BIG_H - EDGE;
+function placeWorks(cols, rows, note, big) {
+  const maxC = cols - big.w - EDGE, maxR = rows - big.h - EDGE;
   let best = [];
   for (let round = 0; round < ROUNDS && best.length < WORKS.length; round++) {
     const taken = [];
     for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
-      const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: BIG_W, h: BIG_H };
+      const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: big.w, h: big.h };
       if (!near(p, note, 1) && !taken.some(q => near(p, q, 1))) taken.push(p);
     }
     if (taken.length > best.length) best = taken;
@@ -100,17 +103,24 @@ function placeWorks(cols, rows, note) {
 
 function layout() {
   const W = stage.clientWidth, H = stage.clientHeight;
-  const guess = N + WORKS.length * BIG_W * BIG_H + 4 * NOTE_H;
-  const cols = Math.max(BIG_W + 2 * EDGE, Math.round(W / Math.sqrt(W * H / guess)));
-  const noteW = Math.max(4, Math.round(cols * NOTE_RATIO));
-  // 사진 142장이 다 들어가도록 글 상자 폭까지 넣고 줄 수 계산
-  const total = N + WORKS.length * BIG_W * BIG_H + noteW * NOTE_H;
-  const rows = Math.max(BIG_H + 2 * EDGE, NOTE_H + 1, Math.ceil(total / cols));
+  const big = W < PHONE_MAX ? BIG_PHONE : BIG_DESK;
+  const cellRatio = (big.w / big.h) / WORK_RATIO;   // 사진 칸 세로/가로
+  // 칸 세로/가로를 cellRatio에 맞춰 줄 수를 정하고, 사진이 다 안 들어가면 열을 늘림
+  const fixed = WORKS.length * big.w * big.h;
+  const noteWidth = cols => Math.max(4, Math.round(cols * NOTE_RATIO)) + 1;
+  let cols = Math.max(big.w + 2 * EDGE, Math.round(W / Math.sqrt(W * H / (N + fixed + 4 * NOTE_H) / cellRatio)));
+  let rows;
+  for (;;) {
+    rows = Math.max(big.h + 2 * EDGE, NOTE_H + 1, Math.round(H / (W / cols * cellRatio)));
+    if (cols * rows >= N + fixed + noteWidth(cols) * NOTE_H) break;
+    cols++;
+  }
+  const noteW = noteWidth(cols);
   const cw = W / cols, ch = H / rows;
   const lift = Math.min(cw, ch) * LIFT;
 
   const note = { c: cols - noteW, r: 1, w: noteW, h: NOTE_H };
-  const spots = placeWorks(cols, rows, note);
+  const spots = placeWorks(cols, rows, note, big);
   const used = new Set();
   for (const p of [note, ...spots]) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
 
@@ -126,7 +136,7 @@ function layout() {
 
   spots.forEach((p, j) => {
     const w = WORKS[j];
-    const box = el('a', 'box', `left:${p.c * cw}px;top:${p.r * ch}px;width:${BIG_W * cw}px;height:${BIG_H * ch}px;--img:url(${w.img})`);
+    const box = el('a', 'box', `left:${p.c * cw}px;top:${p.r * ch}px;width:${big.w * cw}px;height:${big.h * ch}px;--img:url(${w.img})`);
     box.href = w.href;
     box.setAttribute('aria-label', `${w.name} — ${w.sub}`);
     for (const s of ['wt', 'wb']) box.appendChild(el('div', s, `height:${lift}px`));
