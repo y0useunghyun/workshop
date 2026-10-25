@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>거침 부드러움 워크숍</title>
+<style>
+html, body { margin: 0; height: 100%; background: #fff; overflow: hidden }
+#bg { position: fixed; inset: 0; display: grid }
+#bg img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: cover; display: block }
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+<script>
+// 30일 동안 모은 자료 142장 — workshop1 items.js 순서 그대로
+const N = 142;
+const bg = document.getElementById('bg');
+
+// 화면을 빈칸 없이 채우는 정사각형에 가까운 칸 수 계산
+function layout() {
+  const w = innerWidth, h = innerHeight;
+  const cols = Math.max(1, Math.round(w / Math.sqrt(w * h / N)));
+  const rows = Math.ceil(N / cols);
+  bg.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+  bg.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+  // 마지막 줄 남는 칸은 처음 사진부터 다시 채움
+  const total = cols * rows;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < total; i++) {
+    const img = new Image();
+    img.src = `t/${String(i % N + 1).padStart(3, '0')}.jpg`;
+    img.alt = '';
+    img.decoding = 'async';
+    frag.appendChild(img);
+  }
+  bg.replaceChildren(frag);
+}
+
+layout();
+let timer;
+addEventListener('resize', () => { clearTimeout(timer); timer = setTimeout(layout, 150); });
+</script>
+</body>
+</html>
