@@ -14,16 +14,16 @@
         en: { title: '30-Day Project 1', body: 'Hello. In the Visual Design Workshop class at Kaywon University of Art & Design, we carried out the ‘30-Day Project.’ For 30 days, our five team members collected materials on the themes of roughness and softness, regardless of medium. We then explored and experimented with ways of presenting what we collected.' },
       },
       roll: {
-        ko: { title: '롤', body: '30일 동안 모은 자료를 한 장의 긴 종이 띠로 이어 키친타올처럼 감았습니다. 거침과 부드러움을 두 롤에 나눠 감고, 종이가 풀려 나오면서 자료가 하나씩 보이게 했습니다. 쌓인 기록을 ‘풀어서 본다’는 감각을 담고 싶었습니다.' },
-        en: { title: 'Roll', body: 'We joined everything we collected over 30 days into one long paper strip and wound it like a kitchen towel roll. Roughness and softness are wound on two separate rolls, and each item appears as the paper unrolls. We wanted to capture the feeling of “unrolling” what had piled up.' },
+        ko: { title: '롤', body: '30일 동안 모은 자료를 한 장의 긴 종이 띠로 이어 키친타올처럼 감았습니다. 거침과 부드러움을 두 롤에 나눠 감고, 종이가 풀려 나오면서 자료가 하나씩 보이게 했습니다.' },
+        en: { title: 'Roll', body: 'We joined everything we collected over 30 days into one long paper strip and wound it like a kitchen towel roll. Roughness and softness are wound on two separate rolls, and each item appears as the paper unrolls.' },
       },
       band: {
         ko: { title: '띠', body: '모든 자료를 하나의 띠로 이어 원으로 둘렀습니다. 처음과 끝이 없는 띠 위에서 거침과 부드러움이 구분 없이 이어지며 돌아갑니다.' },
         en: { title: 'Band', body: 'We linked every item into a single band and wrapped it into a ring. On a band with no beginning or end, roughness and softness run into each other without division as it turns.' },
       },
       weave: {
-        ko: { title: '직조', body: '트레이싱지에 뽑은 사진을 길게 오려 띠로 만들고, 거침과 부드러움을 날실과 씨실처럼 엮었습니다. 반투명한 띠가 겹치는 자리에서 두 감각이 섞여 보이도록 했습니다. 직접 띠를 골라 엮어 볼 수도 있습니다.' },
-        en: { title: 'Weave', body: 'We printed photos on tracing paper, cut them into long strips, and wove roughness and softness together like warp and weft. Where the translucent strips overlap, the two sensations blend. You can also pick strips and weave your own.' },
+        ko: { title: '직조', body: '사진을 길게 오려 띠로 만들고, 거침과 부드러움을 날실과 씨실처럼 엮었습니다. 띠가 겹치는 자리에서 두 감각이 섞여 보이도록 했습니다. 직접 띠를 골라 엮어 볼 수도 있습니다.' },
+        en: { title: 'Weave', body: 'We cut photos into long strips and wove roughness and softness together like warp and weft. Where the strips overlap, the two sensations blend. You can also pick strips and weave your own.' },
       },
       cube: {
         ko: { title: '큐브', body: '사진의 한 부분씩을 큐브의 칸에 붙였습니다. 줄을 돌릴 때마다 서로 다른 자료가 맞붙으며 새로운 조합이 생기고, 칸을 누르면 그 조각이 원래 어떤 사진이었는지 볼 수 있습니다.' },
@@ -87,39 +87,46 @@
     return { setRight(l) { label = l; draw(); }, btn };
   }
 
-  // ── 글 종이: 제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대(최소 16px, 꽉 찬 크기 - 1px) ──
+  // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
+  //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
   const BODY_MIN = 16, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;
   const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
   function paper(key) {
     const el = document.createElement('div');
-    el.className = 'paper';
+    el.className = 'ws-paper';
     let content = TEXT.paper[key];
     const sizes = {};
     let last = null;   // 마지막 fit 조건 { rowH, rows }
 
-    const inner = l => `<div class="in" lang="${l}"><h1>${content[l].title}</h1><p>${content[l].body}</p></div>`;
+    const inner = (l, c = content) => `<div class="ws-in" lang="${l}"><h1>${c[l].title}</h1><p>${c[l].body}</p></div>`;
     const setSize = (t, b) => { el.style.setProperty('--tsize', `${t}px`); el.style.setProperty('--bsize', `${b}px`); };
-    const measure = l => { el.innerHTML = inner(l); return el.firstElementChild; };
-    const oneLine = (l, t) => { setSize(t, BODY_MIN); const h = measure(l).querySelector('h1'); return h.offsetHeight < t * 1.15 * 1.5; };
+    const measure = (l, c) => { el.innerHTML = inner(l, c); return el.firstElementChild; };
+    const ref = TEXT.paper.home;   // 크기 기준 글
+    const oneLine = (l, t) => { setSize(t, BODY_MIN); const h = measure(l, ref).querySelector('h1'); return h.offsetHeight < t * 1.15 * 1.5; };
 
-    // 종이 줄 수 = 두 언어 모두 최소 크기로 들어가는 줄 수(최소 NOTE_H). 그 안에서 언어마다 크기를 따로
+    // 1) 홈 글로 크기 정하기: 두 언어 모두 최소 크기로 들어가는 줄 수(최소 NOTE_H) 안에서 언어마다 최대
+    // 2) 이 종이 글을 그 크기로 넣어 줄 수 정하기 (최소 NOTE_H)
     function fit(rowH, fixedRows) {
       const langs = ['ko', 'en'];
+      el.style.overflow = 'hidden';   // 재는 동안 스크롤바가 폭을 먹지 않게 (윈도우는 스크롤바가 두꺼움)
       for (const l of langs) {
         let t = TITLE_MAX;
         while (t > TITLE_MIN && !oneLine(l, t)) t--;
         sizes[l] = { t, b: BODY_MIN };
       }
-      const need = Math.max(...langs.map(l => { setSize(sizes[l].t, BODY_MIN); return measure(l).offsetHeight; }));
-      const rows = fixedRows || Math.max(G.NOTE_H, Math.ceil((need + BOTTOM_ROOM * rowH) / rowH));
-      const maxH = rows * rowH - BOTTOM_ROOM * rowH;
+      const refNeed = Math.max(...langs.map(l => { setSize(sizes[l].t, BODY_MIN); return measure(l, ref).offsetHeight; }));
+      const refRows = Math.max(G.NOTE_H, Math.ceil((refNeed + BOTTOM_ROOM * rowH) / rowH));
+      const maxH = refRows * rowH - BOTTOM_ROOM * rowH;
       for (const l of langs) {
         let b = BODY_MAX;
-        while (b > BODY_MIN) { setSize(sizes[l].t, b); if (measure(l).offsetHeight <= maxH) break; b--; }
+        while (b > BODY_MIN) { setSize(sizes[l].t, b); if (measure(l, ref).offsetHeight <= maxH) break; b--; }
         sizes[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
       }
+      const own = Math.max(...langs.map(l => { setSize(sizes[l].t, sizes[l].b); return measure(l).offsetHeight; }));
+      const rows = fixedRows || Math.max(G.NOTE_H, Math.ceil((own + BOTTOM_ROOM * rowH) / rowH));
+      el.style.overflow = '';
       last = { rowH, rows };
       render();
       return rows;
@@ -137,14 +144,17 @@
       if (JSON.stringify(sizes) === before) watch.disconnect();
     });
 
+    // 글꼴을 다 받으면 한 번 더 맞춤 → 홈(글꼴 받기 전에 잼)과 안쪽 페이지(받은 뒤에 잼)의 크기가 똑같아짐
+    document.fonts.addEventListener('loadingdone', () => { if (last && el.isConnected && !el.hidden) fit(last.rowH, last.rows); });
+
     function render() {
       if (!sizes[lang]) return;
       setSize(sizes[lang].t, sizes[lang].b);
       const b = TEXT.langBtn[lang];
-      el.innerHTML = inner(lang) + `<button class="plang" type="button" aria-label="${b.label}">${b.button}</button>`;
-      el.querySelector('.plang').addEventListener('click', () => {
+      el.innerHTML = inner(lang) + `<button class="ws-lang" type="button" aria-label="${b.label}">${b.button}</button>`;
+      el.querySelector('.ws-lang').addEventListener('click', () => {
         setLang(lang === 'ko' ? 'en' : 'ko');
-        el.querySelector('.plang').focus();
+        el.querySelector('.ws-lang').focus();
       });
       watch.disconnect();
       watch.observe(el.firstElementChild);
@@ -184,6 +194,18 @@
     addEventListener('keydown', e => { if (e.key === 'Escape' && !p.el.hidden) toggle(false); });
     return { setPaper: k => { p.setContent(k); if (!p.el.hidden) place(); } };
   }
+
+  // Adobe 글꼴은 페이지에 있는 글자만 받아옴 → 모든 종이 글·헤더 글을 안 보이게 깔아 둬서 어느 페이지에서나
+  // 같은 글자를 받게 함 (안 그러면 홈 글 기준으로 잴 때 대체 글꼴로 재서 크기가 달라짐)
+  function seedGlyphs() {
+    const all = [TEXT.header.ko, TEXT.header.en, ...Object.values(TEXT.paper).flatMap(p => [p.ko.title, p.ko.body, p.en.title, p.en.body])].join(' ');
+    const d = document.createElement('div');
+    d.className = 'ws-glyphs';
+    d.setAttribute('aria-hidden', 'true');
+    d.textContent = all;
+    document.body.appendChild(d);
+  }
+  seedGlyphs();
 
   const headH = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ws-head')) || 40;
 

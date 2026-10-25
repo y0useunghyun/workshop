@@ -19,25 +19,28 @@
 .ws-head :focus-visible { outline: 2px solid #fff; outline-offset: 4px }
 
 /* 글 종이: 흰색 90%, 밑이 아주 조금 비침. 글자 크기는 shell.js가 맞춤(--tsize, --bsize) */
-.paper {
+.ws-paper {
   position: absolute; box-sizing: border-box; background: rgba(255, 255, 255, .9); color: #000;
   overflow: auto; container-type: size; font-family: var(--ws-font);
 }
-.paper .in { padding: 2cqi 3.5cqi }
-.paper h1 {
+.ws-paper .ws-in { padding: 2cqi 3.5cqi }
+.ws-paper h1 {
   margin: 0 0 .9em; padding-right: 14cqi;   /* EN 버튼 자리 */
   font-size: var(--tsize, 9.5cqi); font-weight: 500; line-height: 1.15; letter-spacing: -.02em;
 }
-.paper p { margin: 0; font-size: var(--bsize, 16px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em }
-.paper .plang {
+.ws-paper p { margin: 0; font-size: var(--bsize, 16px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em }
+.ws-paper .ws-lang {
   position: absolute; top: 2.5cqi; right: 2.5cqi;
   background: #000; color: #fff; border: 0; border-radius: 0; cursor: pointer;
   font: inherit; font-size: clamp(10px, 3.6cqi, 14px); line-height: 1; padding: .45em .6em;
 }
-@media (hover: hover) { .paper .plang:hover { background: #fff; color: #000; outline: 1px solid #000; outline-offset: -1px } }
-.paper .plang:focus-visible { outline: 2px solid #000; outline-offset: 2px }
+@media (hover: hover) { .ws-paper .ws-lang:hover { background: #fff; color: #000; outline: 1px solid #000; outline-offset: -1px } }
+.ws-paper .ws-lang:focus-visible { outline: 2px solid #000; outline-offset: 2px }
 
 /* 안쪽 페이지: 종이는 화면에 고정, 위 아이콘 줄은 헤더 밑으로 */
 .ws-info { position: fixed; z-index: 99 }
 .ws-info[hidden] { display: none }
 body.ws-sub #ui, body.ws-sub #pg { top: calc(env(safe-area-inset-top, 0px) + var(--ws-head) + 14px) }
+
+/* 글꼴 글자 받기용 — 안 보이지만 그려지게(display:none이면 글꼴이 안 받아짐) */
+.ws-glyphs { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; overflow: hidden; font-family: var(--ws-font); font-weight: 500; white-space: nowrap }
