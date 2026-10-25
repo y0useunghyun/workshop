@@ -89,7 +89,7 @@
 
   // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
   //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
-  const BODY_MIN = 16, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;
+  const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 13, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
   const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
@@ -104,12 +104,13 @@
     const setSize = (t, b) => { el.style.setProperty('--tsize', `${t}px`); el.style.setProperty('--bsize', `${b}px`); };
     const measure = (l, c) => { el.innerHTML = inner(l, c); return el.firstElementChild; };
     const ref = TEXT.paper.home;   // 크기 기준 글
-    const oneLine = (l, t) => { setSize(t, BODY_MIN); const h = measure(l, ref).querySelector('h1'); return h.offsetHeight < t * 1.15 * 1.5; };
+    const oneLine = (l, t) => { setSize(t, 13); const h = measure(l, ref).querySelector('h1'); return h.offsetHeight < t * 1.15 * 1.5; };
 
     // 1) 홈 글로 크기 정하기: 두 언어 모두 최소 크기로 들어가는 줄 수(최소 NOTE_H) 안에서 언어마다 최대
     // 2) 이 종이 글을 그 크기로 넣어 줄 수 정하기 (최소 NOTE_H)
     function fit(rowH, fixedRows) {
       const langs = ['ko', 'en'];
+      const BODY_MIN = innerWidth < G.PHONE_MAX ? BODY_MIN_PHONE : BODY_MIN_DESK;
       el.style.overflow = 'hidden';   // 재는 동안 스크롤바가 폭을 먹지 않게 (윈도우는 스크롤바가 두꺼움)
       for (const l of langs) {
         let t = TITLE_MAX;

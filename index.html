@@ -93,15 +93,15 @@ const el = (tag, cls, style) => Object.assign(document.createElement(tag), { cla
 const near = (a, b, gap) => a.c < b.c + b.w + gap && b.c < a.c + a.w + gap && a.r < b.r + b.h + gap && b.r < a.r + a.h + gap;
 
 // 작업 4개를 화면 끝·글 종이·서로에게서 한 칸씩 띄워 무작위 배치.
-// 자리가 모자라면(폰) 작업끼리는 붙여도 되게 다시 시도
 function placeWorks(cols, rows, noteBox, big) {
-  const maxC = cols - big.w - EDGE, maxR = rows - big.h - EDGE;
   let best = [];
-  for (const gap of [1, 0]) {
+  // 자리 모자라면 차례로 양보: 서로 한 칸 띄움 → 서로 붙임 → 화면 끝에도 붙임 (작은 폰)
+  for (const [gap, edge] of [[1, EDGE], [0, EDGE], [0, 0]]) {
+    const maxC = cols - big.w - edge, maxR = rows - big.h - edge;
     for (let round = 0; round < ROUNDS && best.length < WORKS.length; round++) {
       const taken = [];
       for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
-        const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: big.w, h: big.h };
+        const p = { c: edge + Math.floor(Math.random() * (maxC - edge + 1)), r: edge + Math.floor(Math.random() * (maxR - edge + 1)), w: big.w, h: big.h };
         if (!near(p, noteBox, 1) && !taken.some(q => near(p, q, gap))) taken.push(p);
       }
       if (taken.length > best.length) best = taken;
