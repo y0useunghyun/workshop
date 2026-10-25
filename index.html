@@ -19,21 +19,11 @@
     h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
   })(document);
 </script>
+<link rel="stylesheet" href="shell.css">
 <style>
-:root { --head: 40px; --hover: rgba(0, 0, 0, .88) }
+:root { --head: var(--ws-head); --hover: rgba(0, 0, 0, .88) }
 html, body { margin: 0; height: 100%; background: #111; overflow: hidden }
-/* 대체 글꼴 SUIT (SIL OFL 1.1) — fonts/OFL.txt */
-@font-face { font-family: "SUIT"; src: url(fonts/SUIT-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap }
-@font-face { font-family: "SUIT"; src: url(fonts/SUIT-Medium.woff2) format("woff2"); font-weight: 500; font-display: swap }
-@font-face { font-family: "SUIT"; src: url(fonts/SUIT-SemiBold.woff2) format("woff2"); font-weight: 600; font-display: swap }
-body { font-family: "jjjgothic", "SUIT", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
-
-header {
-  position: fixed; top: 0; left: 0; right: 0; height: var(--head); z-index: 2;
-  background: #000; color: #fff;
-  display: flex; align-items: center; padding: 0 14px;
-  font-size: 20px; font-weight: 500; letter-spacing: -.01em;
-}
+body { font-family: var(--ws-font) }
 
 #stage { position: fixed; top: var(--head); left: 0; right: 0; bottom: 0; perspective: 900px }
 #floor { position: absolute; inset: 0; transform-style: preserve-3d }
@@ -67,39 +57,20 @@ header {
 .wb { bottom: 0; transform-origin: bottom; transform: rotateX(-90deg) }
 .wl { left: 0; transform-origin: left; transform: rotateY(-90deg) }
 .wr { right: 0; transform-origin: right; transform: rotateY(90deg) }
-
-/* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄. 밑에 깔린 사진이 아주 조금 비침 */
-#note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto; container-type: size }
-#note .in { padding: 2cqi 3.5cqi }
-#note h1 { padding-right: 14cqi }   /* 번역 버튼 자리 */
-#lang {
-  position: absolute; top: 2.5cqi; right: 2.5cqi;
-  background: #000; color: #fff; border: 0; border-radius: 0; cursor: pointer;
-  font: inherit; font-size: clamp(10px, 3.6cqi, 14px); line-height: 1; padding: .45em .6em;
-}
-@media (hover: hover) { #lang:hover { background: #fff; color: #000; outline: 1px solid #000; outline-offset: -1px } }
-#lang:focus-visible { outline: 2px solid #3d63f0; outline-offset: 2px }
-#note h1 {
-  margin: 0 0 .9em; font-size: var(--tsize, 9.5cqi); font-weight: 500; line-height: 1.15; letter-spacing: -.02em; color: #000;
-}
-#note p {
-  margin: 0;
-  font-size: var(--bsize, 16px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em; color: #000;
-}
 </style>
 <link rel="stylesheet" href="back.css">
 </head>
 <body>
-<header><span id="htitle">시각디자인 워크숍</span><button id="flip" type="button">인덱스</button></header>
 <main id="stage"><div id="floor"></div></main>
 <section id="back" hidden></section>
 
+<script src="shell.js"></script>
 <script src="titles.js"></script>
 <script src="index-data.js"></script>
 <script src="back.js"></script>
 <script>
-// 바닥: 30일 동안 모은 자료 142장 (workshop1 items.js 순서)
-const N = 142;
+// 바닥: 30일 동안 모은 자료 142장 (workshop1 items.js 순서). 칸 계산·글 종이·헤더는 shell.js (모든 페이지 공통)
+const N = WS.G.N;
 // 한 층 위: 그 사진들로 만든 작업
 const WORKS = [
   { img: 'w/roll.jpg',  name: '롤',   en: 'Roll', sub: 'workshop 1', href: 'https://y0useunghyun.github.io/workshop1/' },
@@ -107,28 +78,23 @@ const WORKS = [
   { img: 'w/weave.jpg', name: '직조', en: 'Weave', sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/' },
   { img: 'w/cube.jpg',  name: '큐브',  en: 'Cube', sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/cube.html' },
 ];
-// 작업 칸 크기 (사진 칸 기준) — 폰은 칸 수를 줄이고, 칸을 세로로 살짝 길게 해서 5:4 비율 유지
-const BIG_DESK = { w: 5, h: 4 }, BIG_PHONE = { w: 4, h: 3 };
-const PHONE_MAX = 700;        // 이 폭보다 좁으면 폰
-const WORK_RATIO = 5 / 4;     // 작업 칸 가로:세로
-const NOTE_H = 5;             // 글 상자 최소 높이 (줄) — 글이 길면 늘어남
-const NOTE_RATIO = 0.22;      // 글 상자 폭 (화면 폭 대비, 최소 4칸) - 1칸, 컴퓨터는 오른쪽 끝에서 한 칸 띄움
-const NOTE_RATIO_PHONE = 0.6; // 폰은 글이 읽히게 넓게
 const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
-const EDGE = 1;               // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
+const EDGE = WS.G.EDGE;       // 작업은 화면 끝에서 이만큼 칸을 띄움 — 올라오며 커져도 안 잘리게
 const ROUNDS = 300, TRIES = 60;
 
 const stage = document.getElementById('stage');
 const floor = document.getElementById('floor');
+const note = WS.paper('home');
+note.el.id = 'note';
 
 const pad = n => String(n).padStart(3, '0');
 const el = (tag, cls, style) => Object.assign(document.createElement(tag), { className: cls, style });
 // 사각형 a, b가 gap 칸 이내로 붙거나 겹치는지
 const near = (a, b, gap) => a.c < b.c + b.w + gap && b.c < a.c + a.w + gap && a.r < b.r + b.h + gap && b.r < a.r + a.h + gap;
 
-// 작업 4개를 화면 끝·글 상자·서로에게서 한 칸씩 띄워 무작위 배치.
+// 작업 4개를 화면 끝·글 종이·서로에게서 한 칸씩 띄워 무작위 배치.
 // 자리가 모자라면(폰) 작업끼리는 붙여도 되게 다시 시도
-function placeWorks(cols, rows, note, big) {
+function placeWorks(cols, rows, noteBox, big) {
   const maxC = cols - big.w - EDGE, maxR = rows - big.h - EDGE;
   let best = [];
   for (const gap of [1, 0]) {
@@ -136,7 +102,7 @@ function placeWorks(cols, rows, note, big) {
       const taken = [];
       for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
         const p = { c: EDGE + Math.floor(Math.random() * (maxC - EDGE + 1)), r: EDGE + Math.floor(Math.random() * (maxR - EDGE + 1)), w: big.w, h: big.h };
-        if (!near(p, note, 1) && !taken.some(q => near(p, q, gap))) taken.push(p);
+        if (!near(p, noteBox, 1) && !taken.some(q => near(p, q, gap))) taken.push(p);
       }
       if (taken.length > best.length) best = taken;
     }
@@ -146,33 +112,18 @@ function placeWorks(cols, rows, note, big) {
 }
 
 function layout() {
-  const W = stage.clientWidth, H = stage.clientHeight;
-  const big = W < PHONE_MAX ? BIG_PHONE : BIG_DESK;
-  const cellRatio = (big.w / big.h) / WORK_RATIO;   // 사진 칸 세로/가로
-  // 칸 세로/가로를 cellRatio에 맞춰 줄 수를 정하고, 사진이 다 안 들어가면 열을 늘림
-  const fixed = WORKS.length * big.w * big.h;
-  const noteWidth = cols => W < PHONE_MAX ? Math.round(cols * NOTE_RATIO_PHONE) : Math.max(4, Math.round(cols * NOTE_RATIO)) - 1;
-  let cols = Math.max(big.w + 2 * EDGE, Math.round(W / Math.sqrt(W * H / (N + fixed + 4 * NOTE_H) / cellRatio)));
-  let rows;
-  for (;;) {
-    rows = Math.max(big.h + 2 * EDGE, NOTE_H + 1, Math.round(H / (W / cols * cellRatio)));
-    if (cols * rows >= N + fixed) break;
-    cols++;
-  }
-  const noteW = noteWidth(cols);
-  const cw = W / cols, ch = H / rows;
+  const g = WS.grid(stage.clientWidth, stage.clientHeight);
+  const { cols, rows, cw, ch, big } = g;
   const lift = Math.min(cw, ch) * LIFT;
 
-  // 글 상자: 글이 다 들어가도록 높이를 줄 단위로 늘림 (최소 NOTE_H줄)
-  const noteEl = el('div', '', `width:${noteW * cw}px`);
-  noteEl.id = 'note';
-  floor.replaceChildren(noteEl);
-  // 글자 크기는 상자를 채우는 가장 큰 크기로 (언어마다 따로)
-  const noteRows = fitNote(noteEl, ch);
-  noteFit = { el: noteEl, rowH: ch, rows: noteRows };
-  fillNote(noteEl);
-  const note = { c: cols - noteW - (W < PHONE_MAX ? 0 : 1), r: 1, w: noteW, h: noteRows };
-  const spots = placeWorks(cols, rows, note, big);
+  // 글 종이: 글이 다 들어가도록 높이를 줄 단위로 늘림 (최소 5줄), 글자는 종이를 채우게
+  Object.assign(note.el.style, { left: `${g.noteC * cw}px`, top: `${g.noteR * ch}px`, width: `${g.noteW * cw}px`, height: '' });
+  floor.replaceChildren(note.el);
+  const noteRows = note.fit(ch);
+  note.el.style.height = `${noteRows * ch}px`;
+  const noteBox = { c: g.noteC, r: g.noteR, w: g.noteW, h: noteRows };
+
+  const spots = placeWorks(cols, rows, noteBox, big);
   const used = new Set();
   for (const p of spots) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
 
@@ -199,112 +150,37 @@ function layout() {
     frag.appendChild(box);
   });
 
-  Object.assign(noteEl.style, { left: `${note.c * cw}px`, top: `${note.r * ch}px`, height: `${note.h * ch}px` });
-  frag.appendChild(noteEl);
-
+  frag.appendChild(note.el);
   floor.replaceChildren(frag);
 }
 
-// 글 상자 내용 — 여기에 글 넣기 (한국어 / 영어)
-const NOTE = {
-  ko: {
-    header: '시각디자인 워크숍',
-    title: '30일 프로젝트 1',
-    body: '안녕하세요. 저희는 계원예술대학교 시각디자인 워크숍 수업에서 ‘30일 프로젝트’를 진행했습니다. 30일 동안 팀원 5명이 거침과 부드러움을 주제로, 매체에 상관없이 자료를 수집했습니다. 그리고 수집한 자료를 보여주는 방식에 대해 고민하고, 시도해 보았습니다.',
-    button: 'EN', label: '영어로 보기', toBack: '인덱스', toFront: '닫기',
-  },
-  en: {
-    header: 'Visual Design Workshop',
-    title: '30-Day Project 1',
-    body: 'Hello. In the Visual Design Workshop class at Kaywon University of Art & Design, we carried out the ‘30-Day Project.’ For 30 days, our five team members collected materials on the themes of roughness and softness, regardless of medium. We then explored and experimented with ways of presenting what we collected.',
-    button: 'KO', label: '한국어로 보기', toBack: 'Index', toFront: 'Close',
-  },
-};
-let noteLang = 'ko';
-const noteInner = lang => `<div class="in" lang="${lang}"><h1>${NOTE[lang].title}</h1><p>${NOTE[lang].body}</p></div>`;
-
-// 상자 줄 수 = 두 언어 모두 최소 크기로 들어가는 줄 수(최소 NOTE_H).
-// 그 상자 안에서 언어마다 따로 — 제목은 한 줄에 드는 가장 큰 크기, 본문은 상자를 채우는 가장 큰 크기
-const BODY_MIN = 16, BODY_MAX = 30, TITLE_MIN = 18, TITLE_MAX = 48;
-const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
-const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
-const NOTE_FIT = {};
-let noteFit = null;   // 마지막 배치의 글 상자
-// Adobe 글꼴은 쓰는 한글 글자를 나중에 받아와 글자 폭이 바뀜 → 글이 넘치거나 제목이 두 줄이 되면
-// 상자는 그대로 두고 글자 크기만 다시 맞춤 (크기가 더 안 바뀌면 멈춤)
-const noteWatch = new ResizeObserver(() => {
-  if (!noteFit) return;
-  const el = noteFit.el, h = el.querySelector('h1');
-  const broken = el.scrollHeight > el.clientHeight + 1 || h.offsetHeight > parseFloat(getComputedStyle(h).fontSize) * 1.15 * 1.5;
-  if (!broken) return;
-  const before = JSON.stringify(NOTE_FIT);
-  fitNote(el, noteFit.rowH, noteFit.rows);
-  fillNote(el);
-  if (JSON.stringify(NOTE_FIT) === before) noteWatch.disconnect();
-});
-function fitNote(noteEl, rowH, fixedRows) {
-  const langs = Object.keys(NOTE);
-  const set = (t, b) => { noteEl.style.setProperty('--tsize', `${t}px`); noteEl.style.setProperty('--bsize', `${b}px`); };
-  const measure = lang => { noteEl.innerHTML = noteInner(lang); return noteEl.firstElementChild; };
-  const oneLine = (lang, t) => { set(t, BODY_MIN); const h = measure(lang).querySelector('h1'); return h.offsetHeight < t * 1.15 * 1.5; };
-  for (const l of langs) {
-    let t = TITLE_MAX;
-    while (t > TITLE_MIN && !oneLine(l, t)) t--;
-    NOTE_FIT[l] = { t, b: BODY_MIN };
-  }
-  const need = Math.max(...langs.map(l => { set(NOTE_FIT[l].t, BODY_MIN); return measure(l).offsetHeight; }));
-  const rows = fixedRows || Math.max(NOTE_H, Math.ceil((need + BOTTOM_ROOM * rowH) / rowH));
-  const maxH = rows * rowH - BOTTOM_ROOM * rowH;
-  for (const l of langs) {
-    let b = BODY_MAX;
-    while (b > BODY_MIN) { set(NOTE_FIT[l].t, b); if (measure(l).offsetHeight <= maxH) break; b--; }
-    NOTE_FIT[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
-  }
-  return rows;
-}
-
-function fillNote(noteEl) {
-  const t = NOTE[noteLang];
-  noteEl.style.setProperty('--tsize', `${NOTE_FIT[noteLang].t}px`);
-  noteEl.style.setProperty('--bsize', `${NOTE_FIT[noteLang].b}px`);
-  // 헤더·뒷면도 같은 언어로
-  document.getElementById('htitle').textContent = t.header;
-  document.documentElement.lang = noteLang;
-  setFlipLabel();
-  renderBack(noteLang, WORKS.map(w => ({ ...w, name: noteLang === 'en' ? w.en : w.name })));
-  noteEl.innerHTML = noteInner(noteLang) + `<button id="lang" type="button" aria-label="${t.label}">${t.button}</button>`;
-  noteWatch.disconnect();
-  noteWatch.observe(noteEl.firstElementChild);
-  noteEl.querySelector('#lang').addEventListener('click', () => {
-    noteLang = noteLang === 'ko' ? 'en' : 'ko';
-    fillNote(noteEl);
-    noteEl.querySelector('#lang').focus();
-  });
-}
-
-// 앞면 ↔ 뒷면 — 주소 #index 가 뒷면 (뒤로 가기로 돌아옴)
+// 홈 ↔ 인덱스 — 주소 #index 가 인덱스 (뒤로 가기로 돌아옴)
+const INDEX_LABEL = { ko: '인덱스', en: 'Index' };
 const back = document.getElementById('back');
-const flipBtn = document.getElementById('flip');
 const onBack = () => location.hash === '#index';
-let staleLayout = false;   // 뒷면일 때 창 크기가 바뀌면 앞면 돌아올 때 다시 배치
-function setFlipLabel() { flipBtn.textContent = onBack() ? NOTE[noteLang].toFront : NOTE[noteLang].toBack; }
+let staleLayout = false;   // 인덱스일 때 창 크기가 바뀌면 홈으로 돌아올 때 다시 배치
 let indexOpen = false;
+const head = WS.header(INDEX_LABEL, () => {
+  history.pushState(null, '', onBack() ? location.pathname + location.search : '#index');
+  showSide(true);
+});
 function showSide(animate) {
   const toBack = onBack();
   if (toBack === indexOpen) return;
   indexOpen = toBack;
-  setFlipLabel();
+  head.setRight(toBack ? WS.TEXT.close : INDEX_LABEL);
   flipTo(toBack ? stage : back, toBack ? back : stage, animate).then(() => {
     if (!toBack && staleLayout) { staleLayout = false; layout(); }
   });
 }
-flipBtn.addEventListener('click', () => {
-  history.pushState(null, '', onBack() ? location.pathname + location.search : '#index');
-  showSide(true);
-});
 addEventListener('popstate', () => showSide(true));
 
-// 글꼴(JJJGothic)을 받은 뒤 배치 — 글자 폭이 달라 글 상자 크기가 바뀌므로. 늦으면 1.5초 뒤 대체 글꼴로
+// 인덱스 글도 같은 언어로
+const drawBack = l => renderBack(l, WORKS.map(w => ({ ...w, name: l === 'en' ? w.en : w.name })));
+WS.onLang(drawBack);
+drawBack(WS.lang);
+
+// 글꼴(JJJGothic)을 받은 뒤 배치 — 글자 폭이 달라 글 종이 크기가 바뀌므로. 늦으면 1.5초 뒤 대체 글꼴로
 const FONT_WAIT = 1500;
 let started = false;
 window.fontsReady = () => { if (started) return; started = true; layout(); showSide(false); };

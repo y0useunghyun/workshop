@@ -72,11 +72,3 @@
   #back .arch.open #view { transform: none }
   #view .v-in { height: 100%; margin: 0; padding: 10px 14px 14px; border-left: 0 }
 }
-
-/* 헤더 오른쪽 뒤집기 버튼 */
-#flip {
-  margin-left: auto; background: none; border: 0; color: inherit; cursor: pointer;
-  font: inherit; padding: 0;
-}
-@media (hover: hover) { #flip:hover { text-decoration: underline; text-underline-offset: 4px } }
-#flip:focus-visible { outline: 2px solid #3d63f0; outline-offset: 4px }
