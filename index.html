@@ -4,14 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>거침 부드러움 워크숍</title>
+<!-- Adobe Fonts 웹 프로젝트 (JJJGothic 500) — 크리에이티브 클라우드 구독 동안 유효, 못 불러오면 SUIT -->
+<script>
+  (function(d) {
+    var config = {
+      kitId: 'tde8evh',
+      scriptTimeout: 3000,
+      async: true
+    },
+    h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+  })(document);
+</script>
 <style>
 :root { --head: 40px; --hover: rgba(61, 99, 240, .88) }
 html, body { margin: 0; height: 100%; background: #111; overflow: hidden }
-/* SUIT (SIL OFL 1.1) — fonts/OFL.txt */
+/* 대체 글꼴 SUIT (SIL OFL 1.1) — fonts/OFL.txt */
 @font-face { font-family: "SUIT"; src: url(fonts/SUIT-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap }
 @font-face { font-family: "SUIT"; src: url(fonts/SUIT-Medium.woff2) format("woff2"); font-weight: 500; font-display: swap }
 @font-face { font-family: "SUIT"; src: url(fonts/SUIT-SemiBold.woff2) format("woff2"); font-weight: 600; font-display: swap }
-body { font-family: "SUIT", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
+body { font-family: "jjjgothic", "SUIT", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
 
 header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--head); z-index: 2;
@@ -57,7 +68,7 @@ header {
 #note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto; container-type: size }
 #note .in { padding: 2cqi 3.5cqi }
 #note h1 {
-  margin: 0 0 .9em; font-size: 9.5cqi; font-weight: 600; line-height: 1.15; letter-spacing: -.02em; color: #000;
+  margin: 0 0 .9em; font-size: 9.5cqi; font-weight: 500; line-height: 1.15; letter-spacing: -.02em; color: #000;
 }
 #note p {
   margin: 0;
