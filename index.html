@@ -50,7 +50,12 @@ header {
 .wr { right: 0; transform-origin: right; transform: rotateY(90deg) }
 
 /* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄. 밑에 깔린 사진이 아주 조금 비침 */
-#note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto }
+#note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto; container-type: size }
+#note p {
+  margin: 0; padding: 4cqi 5cqi 0;
+  font-size: clamp(11px, 6.2cqi, 24px); line-height: 1.35; letter-spacing: -.02em; color: #000;
+  word-break: keep-all;
+}
 </style>
 </head>
 <body>
@@ -156,7 +161,9 @@ function layout() {
 }
 
 // 글 상자 내용 — 여기에 글 넣기
-const noteHTML = '';
+const noteHTML = `
+  <p>시각디자인 워크숍 30일 프로젝트.</p>
+  <p>팀원 다섯 명이 15일은 거침을, 15일은 부드러움을 매체에 상관없이 모았습니다.</p>`;
 
 layout();
 let timer;
