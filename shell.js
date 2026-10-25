@@ -167,14 +167,14 @@
     };
   }
 
-  // ── 안쪽 페이지: 헤더 「정보」 → 홈 글 상자와 같은 자리에 종이 ──
+  // ── 안쪽 페이지: 헤더 「설명」 → 홈 글 상자와 같은 자리에 종이 ──
   function subpage(key) {
     document.body.classList.add('ws-sub');
     const p = paper(key);
     p.el.classList.add('ws-info');
     p.el.hidden = true;
     document.body.appendChild(p.el);
-    const info = { ko: '정보', en: 'Info' };
+    const info = { ko: '설명', en: 'About' };
     const head = header(info, () => toggle());
 
     function place() {
