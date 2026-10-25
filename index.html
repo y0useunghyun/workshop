@@ -5,41 +5,144 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>거침 부드러움 워크숍</title>
 <style>
-html, body { margin: 0; height: 100%; background: #fff; overflow: hidden }
-#bg { position: fixed; inset: 0; display: grid }
-#bg img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: cover; display: block }
+:root { --head: 40px; --hover: rgba(61, 99, 240, .88) }
+html, body { margin: 0; height: 100%; background: #111; overflow: hidden }
+body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
+
+header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--head); z-index: 2;
+  background: #000; color: #fff;
+  display: flex; align-items: center; padding: 0 14px;
+  font-size: 20px; letter-spacing: -.01em;
+}
+
+#stage { position: fixed; top: var(--head); left: 0; right: 0; bottom: 0; perspective: 900px }
+#floor { position: absolute; inset: 0; transform-style: preserve-3d }
+
+/* 바닥 — 모은 사진 */
+.ph { position: absolute; background: #222 center / cover no-repeat; overflow: hidden }
+.ph::after {
+  content: attr(data-t); position: absolute; inset: 0; padding: 4px 5px;
+  background: var(--hover); color: #fff; font-size: 11px; line-height: 1.3;
+  opacity: 0;
+}
+@media (hover: hover) { .ph:hover::after { opacity: 1 } }
+
+/* 한 층 위 — 사진으로 만든 작업 */
+.box { position: absolute; transform-style: preserve-3d; display: block; color: #fff; text-decoration: none }
+.box > * { position: absolute; background-repeat: no-repeat }
+.box .face { inset: 0; background-size: cover; background-position: center }
+.box .face span {
+  position: absolute; inset: 0; padding: 8px 10px;
+  background: var(--hover); font-size: 18px; line-height: 1.25;
+  opacity: 0; transition: opacity .15s;
+}
+@media (hover: hover) { .box:hover .face span { opacity: 1 } }
+.box:focus-visible .face span { opacity: 1 }
+
+/* 벽 = 가장자리 한 줄을 늘린 색 + 바닥 쪽으로 어둡게 */
+.wt, .wb { left: 0; right: 0 }
+.wl, .wr { top: 0; bottom: 0 }
+.wt { top: 0; transform-origin: top; transform: rotateX(90deg);
+  background-image: linear-gradient(to top, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
+  background-size: 100% 100%, 100% 6000%; background-position: 0 0, top }
+.wb { bottom: 0; transform-origin: bottom; transform: rotateX(-90deg);
+  background-image: linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
+  background-size: 100% 100%, 100% 6000%; background-position: 0 0, bottom }
+.wl { left: 0; transform-origin: left; transform: rotateY(-90deg);
+  background-image: linear-gradient(to left, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
+  background-size: 100% 100%, 6000% 100%; background-position: 0 0, left }
+.wr { right: 0; transform-origin: right; transform: rotateY(90deg);
+  background-image: linear-gradient(to right, rgba(0,0,0,.05), rgba(0,0,0,.55)), var(--img);
+  background-size: 100% 100%, 6000% 100%; background-position: 0 0, right }
 </style>
 </head>
 <body>
-<div id="bg" aria-hidden="true"></div>
-<script>
-// 30일 동안 모은 자료 142장 — workshop1 items.js 순서 그대로
-const N = 142;
-const bg = document.getElementById('bg');
+<header>워크숍</header>
+<main id="stage"><div id="floor"></div></main>
 
-// 화면을 빈칸 없이 채우는 정사각형에 가까운 칸 수 계산
-function layout() {
-  const w = innerWidth, h = innerHeight;
-  const cols = Math.max(1, Math.round(w / Math.sqrt(w * h / N)));
-  const rows = Math.ceil(N / cols);
-  bg.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-  bg.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
-  // 마지막 줄 남는 칸은 처음 사진부터 다시 채움
-  const total = cols * rows;
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < total; i++) {
-    const img = new Image();
-    img.src = `t/${String(i % N + 1).padStart(3, '0')}.jpg`;
-    img.alt = '';
-    img.decoding = 'async';
-    frag.appendChild(img);
+<script src="titles.js"></script>
+<script>
+// 바닥: 30일 동안 모은 자료 142장 (workshop1 items.js 순서)
+const N = 142;
+// 한 층 위: 그 사진들로 만든 작업
+const WORKS = [
+  { img: 'w/roll.jpg',  name: '롤',   sub: 'workshop 1', href: 'https://y0useunghyun.github.io/workshop1/' },
+  { img: 'w/ring.jpg',  name: '원통 띠', sub: 'workshop 1', href: 'https://y0useunghyun.github.io/workshop1/#ring' },
+  { img: 'w/weave.jpg', name: '해체 직조', sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/' },
+  { img: 'w/cube.jpg',  name: '큐브',  sub: 'workshop 2', href: 'https://y0useunghyun.github.io/workshop2/cube.html' },
+];
+const BIG_W = 4, BIG_H = 3;   // 작업 칸 크기 (사진 칸 기준)
+const LIFT = 0.9;             // 작업이 올라온 높이 (사진 칸 한 변 대비)
+const TRIES = 400;
+
+const stage = document.getElementById('stage');
+const floor = document.getElementById('floor');
+
+const pad = n => String(n).padStart(3, '0');
+const el = (tag, cls, style) => Object.assign(document.createElement(tag), { className: cls, style });
+
+// 작업 4개를 서로 붙지 않게 무작위 배치
+function placeWorks(cols, rows) {
+  const taken = [];
+  const hit = (a, b) => a.c < b.c + BIG_W + 1 && b.c < a.c + BIG_W + 1 && a.r < b.r + BIG_H + 1 && b.r < a.r + BIG_H + 1;
+  for (let t = 0; t < TRIES && taken.length < WORKS.length; t++) {
+    const p = { c: Math.floor(Math.random() * (cols - BIG_W + 1)), r: Math.floor(Math.random() * (rows - BIG_H + 1)) };
+    if (!taken.some(q => hit(p, q))) taken.push(p);
   }
-  bg.replaceChildren(frag);
+  return taken;
+}
+
+function layout() {
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const total = N + WORKS.length * BIG_W * BIG_H;
+  const cols = Math.max(BIG_W, Math.round(W / Math.sqrt(W * H / total)));
+  const rows = Math.max(BIG_H, Math.ceil(total / cols));
+  const cw = W / cols, ch = H / rows;
+  const lift = Math.min(cw, ch) * LIFT;
+
+  const spots = placeWorks(cols, rows);
+  const used = new Set();
+  spots.forEach(p => { for (let r = p.r; r < p.r + BIG_H; r++) for (let c = p.c; c < p.c + BIG_W; c++) used.add(r * cols + c); });
+
+  const frag = document.createDocumentFragment();
+  let i = 0;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    if (used.has(r * cols + c)) continue;
+    const k = i++ % N;
+    const ph = el('div', 'ph', `left:${c * cw}px;top:${r * ch}px;width:${Math.ceil(cw)}px;height:${Math.ceil(ch)}px;background-image:url(t/${pad(k + 1)}.jpg)`);
+    if (TITLES[k]) ph.dataset.t = TITLES[k];
+    frag.appendChild(ph);
+  }
+
+  spots.forEach((p, j) => {
+    const w = WORKS[j];
+    const box = el('a', 'box', `left:${p.c * cw}px;top:${p.r * ch}px;width:${BIG_W * cw}px;height:${BIG_H * ch}px;--img:url(${w.img})`);
+    box.href = w.href;
+    box.setAttribute('aria-label', `${w.name} — ${w.sub}`);
+    for (const s of ['wt', 'wb']) box.appendChild(el('div', s, `height:${lift}px`));
+    for (const s of ['wl', 'wr']) box.appendChild(el('div', s, `width:${lift}px`));
+    const face = el('div', 'face', `background-image:url(${w.img});transform:translateZ(${lift}px)`);
+    face.appendChild(Object.assign(document.createElement('span'), { innerHTML: `${w.name}<br>${w.sub}` }));
+    box.appendChild(face);
+    frag.appendChild(box);
+  });
+
+  floor.replaceChildren(frag);
 }
 
 layout();
 let timer;
 addEventListener('resize', () => { clearTimeout(timer); timer = setTimeout(layout, 150); });
+
+// 마우스 따라 보는 위치가 살짝 움직임 (컴퓨터에서만)
+if (matchMedia('(pointer: fine)').matches) {
+  addEventListener('pointermove', e => {
+    const x = 50 + (e.clientX / innerWidth - .5) * 30;
+    const y = 50 + (e.clientY / innerHeight - .5) * 30;
+    stage.style.perspectiveOrigin = `${x}% ${y}%`;
+  });
+}
 </script>
 </body>
 </html>
