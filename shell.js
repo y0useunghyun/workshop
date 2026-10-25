@@ -90,7 +90,7 @@
   // ── 글 종이: 글자 크기는 모든 종이가 같음 = 홈 글(30일 프로젝트)을 같은 폭 종이에 꽉 채운 크기 ──
   //    (제목은 한 줄에 드는 최대, 본문은 종이를 채우는 최대 - 1px, 최소 16px). 글이 더 길면 종이가 줄 단위로 길어짐
   const BODY_MIN_DESK = 16, BODY_MIN_PHONE = 10, BODY_MAX_PHONE = 11, BODY_MAX = 30, TITLE_MIN = 14, TITLE_MAX = 48, TITLE_MAX_PHONE = 20;   // 폰은 글씨 작게 → 종이가 짧아져 작업 칸 자리가 생김
-  const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비)
+  const BOTTOM_ROOM = 0.35;   // 아래 여유 (줄 높이 대비) — 폰은 0.1
   const BODY_STEP_DOWN = 1;   // 꽉 찬 크기에서 한 단계 작게 (유승현)
 
   function paper(key) {
@@ -115,6 +115,7 @@
       const BMAX = phone ? BODY_MAX_PHONE : BODY_MAX;   // 폰은 글씨 작게 고정 → 종이도 짧게
       const TMAX = phone ? TITLE_MAX_PHONE : TITLE_MAX;
       const MIN_ROWS = phone ? G.NOTE_H_PHONE : G.NOTE_H;
+      const ROOM = phone ? 0.1 : BOTTOM_ROOM;
       el.style.overflow = 'hidden';   // 재는 동안 스크롤바가 폭을 먹지 않게 (윈도우는 스크롤바가 두꺼움)
       for (const l of langs) {
         let t = TMAX;
@@ -122,15 +123,15 @@
         sizes[l] = { t, b: BODY_MIN };
       }
       const refNeed = Math.max(...langs.map(l => { setSize(sizes[l].t, BODY_MIN); return measure(l, ref).offsetHeight; }));
-      const refRows = Math.max(MIN_ROWS, Math.ceil((refNeed + BOTTOM_ROOM * rowH) / rowH));
-      const maxH = refRows * rowH - BOTTOM_ROOM * rowH;
+      const refRows = Math.max(MIN_ROWS, Math.ceil((refNeed + ROOM * rowH) / rowH));
+      const maxH = refRows * rowH - ROOM * rowH;
       for (const l of langs) {
         let b = BMAX;
         while (b > BODY_MIN) { setSize(sizes[l].t, b); if (measure(l, ref).offsetHeight <= maxH) break; b--; }
         sizes[l].b = Math.max(BODY_MIN, b - BODY_STEP_DOWN);
       }
       const own = Math.max(...langs.map(l => { setSize(sizes[l].t, sizes[l].b); return measure(l).offsetHeight; }));
-      const rows = fixedRows || Math.max(MIN_ROWS, Math.ceil((own + BOTTOM_ROOM * rowH) / rowH));
+      const rows = fixedRows || Math.max(MIN_ROWS, Math.ceil((own + ROOM * rowH) / rowH));
       el.style.overflow = '';
       last = { rowH, rows };
       render();
