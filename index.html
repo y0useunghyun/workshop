@@ -7,13 +7,17 @@
 <style>
 :root { --head: 40px; --hover: rgba(61, 99, 240, .88) }
 html, body { margin: 0; height: 100%; background: #111; overflow: hidden }
-body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
+/* SUIT (SIL OFL 1.1) — fonts/OFL.txt */
+@font-face { font-family: "SUIT"; src: url(fonts/SUIT-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap }
+@font-face { font-family: "SUIT"; src: url(fonts/SUIT-Medium.woff2) format("woff2"); font-weight: 500; font-display: swap }
+@font-face { font-family: "SUIT"; src: url(fonts/SUIT-SemiBold.woff2) format("woff2"); font-weight: 600; font-display: swap }
+body { font-family: "SUIT", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif }
 
 header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--head); z-index: 2;
   background: #000; color: #fff;
   display: flex; align-items: center; padding: 0 14px;
-  font-size: 20px; letter-spacing: -.01em;
+  font-size: 20px; font-weight: 500; letter-spacing: -.01em;
 }
 
 #stage { position: fixed; top: var(--head); left: 0; right: 0; bottom: 0; perspective: 900px }
@@ -57,7 +61,7 @@ header {
 }
 #note p {
   margin: 0;
-  font-size: clamp(11px, 5.4cqi, 22px); line-height: 1.55; letter-spacing: -.01em; color: #000;
+  font-size: clamp(11px, 5.4cqi, 22px); font-weight: 500; line-height: 1.55; letter-spacing: -.01em; color: #000;
 }
 </style>
 </head>
