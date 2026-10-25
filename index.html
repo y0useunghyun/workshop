@@ -49,12 +49,12 @@ header {
 .wl { left: 0; transform-origin: left; transform: rotateY(-90deg) }
 .wr { right: 0; transform-origin: right; transform: rotateY(90deg) }
 
-/* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄 */
-#note { position: absolute; background: #fff; overflow: auto }
+/* 글 상자 — 오른쪽 끝, 위 한 줄 띄고 5줄. 밑에 깔린 사진이 아주 조금 비침 */
+#note { position: absolute; background: rgba(255, 255, 255, .9); overflow: auto }
 </style>
 </head>
 <body>
-<header>워크숍</header>
+<header>WORKSHOP</header>
 <main id="stage"><div id="floor"></div></main>
 
 <script src="titles.js"></script>
@@ -112,7 +112,7 @@ function layout() {
   let rows;
   for (;;) {
     rows = Math.max(big.h + 2 * EDGE, NOTE_H + 1, Math.round(H / (W / cols * cellRatio)));
-    if (cols * rows >= N + fixed + noteWidth(cols) * NOTE_H) break;
+    if (cols * rows >= N + fixed) break;
     cols++;
   }
   const noteW = noteWidth(cols);
@@ -122,7 +122,7 @@ function layout() {
   const note = { c: cols - noteW, r: 1, w: noteW, h: NOTE_H };
   const spots = placeWorks(cols, rows, note, big);
   const used = new Set();
-  for (const p of [note, ...spots]) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
+  for (const p of spots) for (let r = p.r; r < p.r + p.h; r++) for (let c = p.c; c < p.c + p.w; c++) used.add(r * cols + c);
 
   const frag = document.createDocumentFragment();
   let i = 0;
